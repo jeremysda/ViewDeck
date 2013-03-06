@@ -307,6 +307,8 @@ static NSTimeInterval durationToAnimate(CGFloat pointsToAnimate, CGFloat velocit
         self.rightController = nil;
         self.topController = nil;
         self.bottomController = nil;
+		
+		_boundsObserverAdded = NO;
 
         _ledge[IIViewDeckLeftSide] = _ledge[IIViewDeckRightSide] = _ledge[IIViewDeckTopSide] = _ledge[IIViewDeckBottomSide] = 44;
     }
@@ -794,6 +796,7 @@ static NSTimeInterval durationToAnimate(CGFloat pointsToAnimate, CGFloat velocit
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
     
+	_boundsObserverAdded = YES;
     [self.view addObserver:self forKeyPath:@"bounds" options:NSKeyValueObservingOptionNew context:nil];
 
     if (!_viewFirstAppeared) {
@@ -875,11 +878,10 @@ static NSTimeInterval durationToAnimate(CGFloat pointsToAnimate, CGFloat velocit
 - (void)viewDidDisappear:(BOOL)animated {
     [super viewDidDisappear:animated];
     
-    @try {
-        [self.view removeObserver:self forKeyPath:@"bounds"];
-    } @catch(id anException){
-        //do nothing, obviously it wasn't attached because an exception was thrown
-    }
+	if( _boundsObserverAdded ) {
+		[self.view removeObserver:self forKeyPath:@"bounds"];
+		_boundsObserverAdded = NO;
+	}
     
     [self.centerController viewDidDisappear:animated];
     [self transitionAppearanceFrom:1 to:0 animated:animated];
@@ -965,6 +967,7 @@ static NSTimeInterval durationToAnimate(CGFloat pointsToAnimate, CGFloat velocit
 }
 
 - (void)arrangeViewsAfterRotation {
+
     _willAppearShouldArrangeViewsAfterRotation = UIDeviceOrientationUnknown;
     if (_preRotationSize.width <= 0 || _preRotationSize.height <= 0) return;
     
