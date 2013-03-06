@@ -91,7 +91,7 @@ extern IIViewDeckOffsetOrientation IIViewDeckOffsetOrientationFromIIViewDeckSide
 @private    
     CGPoint _panOrigin;
     UInt32 _viewAppeared;
-	BOOL _boundsObserverAdded;
+    BOOL _boundsObserverAdded;
     BOOL _viewFirstAppeared, _shouldViewDidAppear;
     UInt32 _sideAppeared[6];
     CGFloat _ledge[5];
@@ -137,6 +137,7 @@ typedef void (^IIViewDeckControllerBounceBlock) (IIViewDeckController *controlle
 @property (nonatomic, assign) CGFloat maxSize;
 @property (nonatomic, assign) BOOL resizesCenterView;
 @property (nonatomic, assign) IIViewDeckPanningMode panningMode;
+@property (nonatomic, assign) BOOL panningCancelsTouchesInView;
 @property (nonatomic, assign) IIViewDeckCenterHiddenInteractivity centerhiddenInteractivity;
 @property (nonatomic, assign) IIViewDeckNavigationControllerBehavior navigationControllerBehavior;
 @property (nonatomic, assign) BOOL automaticallyUpdateTabBarItems;

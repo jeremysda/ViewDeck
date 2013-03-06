@@ -307,8 +307,6 @@ static NSTimeInterval durationToAnimate(CGFloat pointsToAnimate, CGFloat velocit
         self.rightController = nil;
         self.topController = nil;
         self.bottomController = nil;
-		
-		_boundsObserverAdded = NO;
 
         _ledge[IIViewDeckLeftSide] = _ledge[IIViewDeckRightSide] = _ledge[IIViewDeckTopSide] = _ledge[IIViewDeckBottomSide] = 44;
     }
@@ -796,7 +794,6 @@ static NSTimeInterval durationToAnimate(CGFloat pointsToAnimate, CGFloat velocit
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
     
-	_boundsObserverAdded = YES;
     [self.view addObserver:self forKeyPath:@"bounds" options:NSKeyValueObservingOptionNew context:nil];
 
     if (!_viewFirstAppeared) {
@@ -878,10 +875,11 @@ static NSTimeInterval durationToAnimate(CGFloat pointsToAnimate, CGFloat velocit
 - (void)viewDidDisappear:(BOOL)animated {
     [super viewDidDisappear:animated];
     
-	if( _boundsObserverAdded ) {
-		[self.view removeObserver:self forKeyPath:@"bounds"];
-		_boundsObserverAdded = NO;
-	}
+    @try {
+        [self.view removeObserver:self forKeyPath:@"bounds"];
+    } @catch(id anException){
+        //do nothing, obviously it wasn't attached because an exception was thrown
+    }
     
     [self.centerController viewDidDisappear:animated];
     [self transitionAppearanceFrom:1 to:0 animated:animated];
@@ -967,7 +965,6 @@ static NSTimeInterval durationToAnimate(CGFloat pointsToAnimate, CGFloat velocit
 }
 
 - (void)arrangeViewsAfterRotation {
-
     _willAppearShouldArrangeViewsAfterRotation = UIDeviceOrientationUnknown;
     if (_preRotationSize.width <= 0 || _preRotationSize.height <= 0) return;
     
@@ -1321,7 +1318,7 @@ static NSTimeInterval durationToAnimate(CGFloat pointsToAnimate, CGFloat velocit
         }
         
         [UIView animateWithDuration:duration delay:0 options:options animations:^{
-            [self notifyWillOpenSide:side animated:animated];
+        [self notifyWillOpenSide:side animated:animated];
             [self controllerForSide:side].view.hidden = NO;
             [self setSlidingFrameForOffset:[self ledgeOffsetForSide:side] forOrientation:IIViewDeckOffsetOrientationFromIIViewDeckSide(side)];
             [self centerViewHidden];
@@ -1372,7 +1369,7 @@ static NSTimeInterval durationToAnimate(CGFloat pointsToAnimate, CGFloat velocit
       
         // first open the view completely, run the block (to allow changes)
         [UIView animateWithDuration:[self openSlideDuration:YES]*longFactor delay:0 options:options animations:^{
-            [self notifyWillOpenSide:side animated:animated];
+        [self notifyWillOpenSide:side animated:animated];
             [self controllerForSide:side].view.hidden = NO;
             [self setSlidingFrameForOffset:bounceOffset forOrientation:IIViewDeckOffsetOrientationFromIIViewDeckSide(side)];
         } completion:^(BOOL finished) {
@@ -1416,7 +1413,7 @@ static NSTimeInterval durationToAnimate(CGFloat pointsToAnimate, CGFloat velocit
     if ([self isSideOpen:side]) options |= UIViewAnimationOptionCurveEaseIn;
     
     [UIView animateWithDuration:duration delay:0 options:options animations:^{
-        [self notifyWillCloseSide:side animated:animated];
+    [self notifyWillCloseSide:side animated:animated];
         [self setSlidingFrameForOffset:0 forOrientation:IIViewDeckOffsetOrientationFromIIViewDeckSide(side)];
         [self centerViewVisible];
     } completion:^(BOOL finished) {
@@ -1460,7 +1457,7 @@ static NSTimeInterval durationToAnimate(CGFloat pointsToAnimate, CGFloat velocit
   
     // first open the view completely, run the block (to allow changes) and close it again.
     [UIView animateWithDuration:[self openSlideDuration:YES]*shortFactor delay:0 options:options animations:^{
-        [self notifyWillCloseSide:side animated:animated];
+    [self notifyWillCloseSide:side animated:animated];
         [self setSlidingFrameForOffset:bounceOffset forOrientation:IIViewDeckOffsetOrientationFromIIViewDeckSide(side)];
     } completion:^(BOOL finished) {
         // run block if it's defined
@@ -1933,11 +1930,11 @@ static NSTimeInterval durationToAnimate(CGFloat pointsToAnimate, CGFloat velocit
     if (![self checkCanCloseSide:fromSide] && ![self checkCanOpenSide:toSide]) return NO;
     
     [UIView animateWithDuration:[self closeSlideDuration:animated] delay:0 options:UIViewAnimationOptionCurveEaseIn | UIViewAnimationOptionLayoutSubviews animations:^{
-        [self notifyWillCloseSide:fromSide animated:animated];
+    [self notifyWillCloseSide:fromSide animated:animated];
         [self setSlidingFrameForOffset:0 forOrientation:IIViewDeckOffsetOrientationFromIIViewDeckSide(fromSide)];
     } completion:^(BOOL finished) {
         [UIView animateWithDuration:[self openSlideDuration:animated] delay:0 options:UIViewAnimationOptionCurveEaseOut | UIViewAnimationOptionLayoutSubviews animations:^{
-            [self notifyWillOpenSide:toSide animated:animated];
+        [self notifyWillOpenSide:toSide animated:animated];
             [self setSlidingFrameForOffset:targetOffset forOrientation:IIViewDeckOffsetOrientationFromIIViewDeckSide(toSide)];
         } completion:^(BOOL finished) {
             [self notifyDidOpenSide:toSide animated:animated];
